@@ -1,0 +1,6 @@
+table,column,n_missing,rate
+customers,acquisition_channel,120,0.008
+customers,preferred_category,180,0.012
+web_sessions,customer_id,220,0.0116921768707483
+orders,campaign_id,3474,0.49742268041237114
+orders,offer_type_redeemed,4662,0.6675257731958762

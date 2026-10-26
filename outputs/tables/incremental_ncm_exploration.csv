@@ -1,0 +1,13 @@
+segment,offer_type,outcome,n_treat,n_control,incremental_ncm,ci_low,ci_high,incremental_conversion
+exploration,PCT_10,ncm_14d,1902,1826,-1.077,-5.118,2.964,0.008
+exploration,PCT_10,ncm_14d_all_returns,1902,1826,-1.114,-5.167,2.94,0.008
+exploration,PCT_20,ncm_14d,1893,1826,-6.174,-9.65,-2.699,0.011
+exploration,PCT_20,ncm_14d_all_returns,1893,1826,-6.854,-10.379,-3.33,0.011
+exploration,FREE_SHIP,ncm_14d,1906,1826,3.56,-0.887,8.006,0.018
+exploration,FREE_SHIP,ncm_14d_all_returns,1906,1826,2.866,-1.526,7.258,0.018
+business_rule_naive,PCT_10,ncm_14d,8538,4806,-19.612,-22.264,-16.959,-0.082
+business_rule_naive,PCT_10,ncm_14d_all_returns,8538,4806,-18.297,-20.946,-15.647,-0.082
+business_rule_naive,PCT_20,ncm_14d,1868,4806,-23.448,-26.371,-20.525,-0.091
+business_rule_naive,PCT_20,ncm_14d_all_returns,1868,4806,-22.716,-25.722,-19.71,-0.091
+business_rule_naive,FREE_SHIP,ncm_14d,3861,4806,-5.357,-9.114,-1.599,-0.074
+business_rule_naive,FREE_SHIP,ncm_14d_all_returns,3861,4806,-6.558,-10.272,-2.845,-0.074

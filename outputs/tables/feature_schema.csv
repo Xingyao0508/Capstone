@@ -1,0 +1,51 @@
+feature,family,type
+assignment_id,context,id/context (not a predictor)
+customer_id,context,id/context (not a predictor)
+campaign_id,context,id/context (not a predictor)
+send_ts,context,id/context (not a predictor)
+assignment_source,context,id/context (not a predictor)
+offer_type,context,id/context (not a predictor)
+email_delivered,context,id/context (not a predictor)
+customer_tenure_days,profile,numeric
+is_member,profile,numeric
+marketing_consent,profile,numeric
+region,profile,categorical
+acquisition_channel,profile,categorical
+customer_tier,profile,categorical
+preferred_category,profile,categorical
+shipping_zone,profile,categorical
+prior_order_count,purchase,numeric
+orders_30d,purchase,numeric
+orders_90d,purchase,numeric
+days_since_last_order,purchase,numeric
+gross_revenue_90d,purchase,numeric
+net_revenue_90d,purchase,numeric
+avg_order_value_90d,purchase,numeric
+discount_amount_90d,purchase,numeric
+cogs_90d,purchase,numeric
+shipping_revenue_90d,purchase,numeric
+shipping_cost_90d,purchase,numeric
+historical_ncm_90d,purchase,numeric
+prior_offer_redemption_rate,purchase,numeric
+returns_90d,returns,numeric
+refund_amount_90d,returns,numeric
+historical_return_rate,returns,numeric
+sessions_7d,web,numeric
+sessions_30d,web,numeric
+pages_viewed_30d,web,numeric
+avg_pages_per_session_30d,web,numeric
+cart_add_sessions_30d,web,numeric
+cart_add_rate_30d,web,numeric
+days_since_last_session,web,numeric
+top_category_viewed_30d,web,categorical
+prior_emails_delivered,email,numeric
+prior_email_opens,email,numeric
+prior_email_clicks,email,numeric
+historical_open_rate,email,numeric
+historical_click_rate,email,numeric
+days_since_last_email_open,email,numeric
+days_since_last_email_click,email,numeric
+units_purchased_90d,product,numeric
+distinct_products_90d,product,numeric
+distinct_categories_90d,product,numeric
+top_purchase_category_90d,product,categorical

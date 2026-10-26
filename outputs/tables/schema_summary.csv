@@ -1,0 +1,12 @@
+table,rows,cols,expected,shape_ok,columns,dtypes
+campaigns,8,6,"(8, 6)",True,"campaign_id,send_ts,campaign_name,channel,outcome_window_days,notes","str,datetime64[us],str,str,int64,str"
+customers,15000,9,"(15000, 9)",True,"customer_id,signup_date,region,acquisition_channel,customer_tier,is_member,preferred_category,shipping_zone,marketing_consent","int64,datetime64[us],str,str,str,int64,str,str,int64"
+historical_assignments,26600,7,"(26600, 7)",True,"assignment_id,campaign_id,customer_id,send_ts,assignment_source,offer_type,email_delivered","str,str,int64,datetime64[us],str,str,int64"
+web_sessions,18816,8,"(18816, 8)",True,"session_id,customer_id,session_ts,device_type,pages_viewed,added_to_cart,category_viewed,traffic_source","str,float64,datetime64[us],str,int64,int64,str,str"
+email_events,18567,6,"(18567, 6)",True,"email_event_id,assignment_id,customer_id,campaign_id,event_ts,event_type","str,str,int64,str,datetime64[us],str"
+orders,6984,14,"(6984, 14)",True,"order_id,customer_id,order_ts,campaign_id,order_source,order_status,offer_redeemed,offer_type_redeemed,merchandise_gross_revenue,discount_amount,shipping_revenue,net_revenue,cogs,shipping_cost","str,int64,datetime64[us],str,str,str,int64,str,float64,float64,float64,float64,float64,float64"
+order_items,16306,6,"(16306, 6)",True,"order_id,line_number,product_id,quantity,unit_list_price,unit_cost","str,int64,str,int64,float64,float64"
+products,180,6,"(180, 6)",True,"product_id,category,list_price,unit_cost,return_rate_prior,item_weight_lb","str,str,float64,float64,float64,float64"
+returns,693,5,"(693, 5)",True,"return_id,order_id,return_ts,refund_amount,return_reason","str,str,datetime64[us],float64,str"
+offer_catalog,4,3,"(4, 3)",True,"offer_type,customer_message,promotion_cost_rule","str,str,str"
+policy_scoring_population,2776,3,"(2776, 3)",True,"customer_id,policy_as_of_ts,campaign_id","int64,datetime64[us],str"

@@ -1,0 +1,9 @@
+offer_type,assignment_source,assignments,conversion,aov,redemption_rate,promo_spend,promo_spend_per_assignment,ncm_total,ncm_per_assignment,ncm_all_returns_per_assignment
+FREE_SHIP,business_rule,3861,0.12,491.745,0.12,77.87,0.02,97517.07,25.257,20.51
+FREE_SHIP,exploration,1906,0.131,369.053,0.131,191.68,0.101,37676.28,19.767,16.227
+NO_OFFER,business_rule,4806,0.193,380.092,,0.0,0.0,147129.1,30.614,27.068
+NO_OFFER,exploration,1826,0.113,354.823,,0.0,0.0,29595.0,16.208,13.361
+PCT_10,business_rule,8538,0.112,282.634,0.112,29881.98,3.5,93933.55,11.002,8.771
+PCT_10,exploration,1902,0.121,349.175,0.121,8907.41,4.683,28778.62,15.131,12.247
+PCT_20,business_rule,1868,0.102,282.613,0.102,13470.81,7.211,13385.1,7.165,4.352
+PCT_20,exploration,1893,0.124,286.802,0.124,16822.74,8.887,18992.79,10.033,6.507
