@@ -1,0 +1,10 @@
+metric,value,limit
+customers scored,2776.0,
+total expected incremental NCM ($),6406.9,
+total expected NCM ($),51241.42,
+expected promo spend ($),1213.65,<= 62000
+offer share,0.5998,<= 0.6
+PCT_20 share among offered,0.0,<= 0.15
+measurement holdout share,0.0501,>= 0.05
+incremental NCM vs PROPENSITY_PCT10 ($),15375.94,
+incremental NCM vs HISTORICAL_MIX ($),9918.14,

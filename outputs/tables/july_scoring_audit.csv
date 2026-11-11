@@ -1,0 +1,18 @@
+check,status,value
+max(event_ts - policy_as_of_ts) <= 0 for every family,PASS,
+no CP08 outcome rows exist (assignments / orders),PASS,
+perturbation: events 1 min after cutoff change no feature,PASS,
+feature names == historical schema (43),PASS,
+logistic spec features present,PASS,
+numeric/categorical types match history,PASS,
+every scoring customer present exactly once,PASS,
+max (event_ts - cutoff) hours: purchase,INFO,-3876.3
+max (event_ts - cutoff) hours: purchase_refunds,INFO,-3611.95
+max (event_ts - cutoff) hours: prior_assignments,INFO,-24.0
+max (event_ts - cutoff) hours: returns,INFO,-3611.95
+max (event_ts - cutoff) hours: web,INFO,-10.95
+max (event_ts - cutoff) hours: email,INFO,-24.0
+raw orders rows after cutoff (excluded),INFO,0.0
+raw returns rows after cutoff (excluded),INFO,17.0
+raw web_sessions rows after cutoff (excluded),INFO,0.0
+raw email_events rows after cutoff (excluded),INFO,0.0

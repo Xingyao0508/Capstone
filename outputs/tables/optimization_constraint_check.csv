@@ -1,0 +1,12 @@
+check,value,limit,rule,pass
+customers,2776,2776,==,True
+exactly-one-action violations,0,0,==,True
+expected promo spend ($),1213.65,62000,<=,True
+offered customers,1665,1665,<=,True
+offered share,0.5998,0.6,<=,True
+PCT_20 customers,0,,info,True
+PCT_20 share among offered,0.0,0.15,<=,True
+reserved holdout customers,139,139,>=,True
+reserved holdout share,0.0501,0.05,>=,True
+holdout customers assigned NO_OFFER,139,139,==,True
+solver status,Optimal,Optimal,==,True

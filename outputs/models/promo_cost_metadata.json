@@ -1,0 +1,16 @@
+{
+ "target": "promo_cost_14d (Step 03 definition)",
+ "training_population": "exploration rows of each commercial action, CP01-CP07",
+ "xgb_config": {
+  "n_estimators": 100,
+  "max_depth": 1,
+  "learning_rate": 0.03
+ },
+ "clip": "estimated_promo_cost = max(prediction, 0)",
+ "NO_OFFER": "deterministic 0",
+ "train_rows": {
+  "PCT_10": 1902,
+  "PCT_20": 1893,
+  "FREE_SHIP": 1906
+ }
+}

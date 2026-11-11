@@ -1,0 +1,5 @@
+action,model_mean_incremental_ncm_CP07,observed_diff_in_means_CP07,step04_randomized_effect_CP01_07,step04_ci_low,step04_ci_high,unconstrained_best_share,final_model_mean_incremental_ncm_all_exploration
+NO_OFFER,0.0,0.0,0.0,0.0,0.0,0.12830188679245283,0.0
+PCT_10,-1.9425588,5.940675507557108,-1.077,-5.118,2.964,0.08773584905660377,-1.0762075
+PCT_20,-7.8875,1.0946857536308467,-6.174,-9.65,-2.699,0.002830188679245283,-6.156689
+FREE_SHIP,6.695341,12.637428103332264,3.56,-0.887,8.006,0.7811320754716982,3.5326786

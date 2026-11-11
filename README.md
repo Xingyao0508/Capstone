@@ -1,102 +1,125 @@
-# Walmart Capstone (Team 2): PromoPilot Modular Pipeline
+# Walmart Capstone (Team 2): PromoPilot Targeted Promotion Pipeline
 
-This pipeline decides which promotion each EverTrail July customer should get: one of `NO_OFFER`, `PCT_10`, `PCT_20` or `FREE_SHIP`. The goal is the most **incremental net contribution margin (NCM)** over 14 days, within the budget and customer-experience limits.
+This pipeline decides which promotion each EverTrail July customer should get: one of `NO_OFFER`, `PCT_10`, `PCT_20` or `FREE_SHIP`. The goal is the most **expected incremental net contribution margin (NCM)** over 14 days, within Walmart's budget and customer-experience constraints.
 
-> **Status: Steps 01–05 are implemented and run end to end. Steps 06–10 are planned and not implemented yet.**
+> **Status: all ten steps (01–10) are implemented and run end to end, from the raw CSVs to `policy_submission.csv`.**
 
-## Pipeline architecture
+## Pipeline
 
-| # | Notebook | Responsibility | Status |
-|---|---|---|---|
-| 01 | `01_data_validation` | Ingest raw files; check schema, keys, missingness, duplicates, timing and financials; clean core tables | done |
-| 02 | `02_build_historical_features` | Pre-send customer, purchase, return, web, email and product features | done |
-| 03 | `03_construct_14_day_outcomes` | 14-day purchase, financial, promo-cost, return and NCM outcomes; build the canonical table | done |
-| 04 | `04_business_analysis` | KPI and EDA by offer, campaign, tenure/value and behavioral segment | done |
-| 05 | `05_logistic_propensity_model` | Required Logistic Regression purchase-propensity baseline | done |
-| 06 | `06_tlearner_xgboost` | Four treatment-specific NCM models and incremental NCM | planned |
-| 07 | `07_score_july_population` | Rebuild features at `policy_as_of_ts`; score each action | planned |
-| 08 | `08_estimate_promotion_cost` | Expected promo cost per customer-action pair | planned |
-| 09 | `09_milp_policy_optimization` | Constrained customer-level allocation | planned |
-| 10 | `10_generate_outputs` | `policy_submission.csv` and reporting tables | planned |
+| # | Notebook | Responsibility |
+|---|---|---|
+| 01 | `01_data_validation` | Validate raw files: schema, keys, missingness, duplicates, timing, financials. Save clean core tables |
+| 02 | `02_build_historical_features` | 43 pre-send features per historical assignment |
+| 03 | `03_construct_14_day_outcomes` | 14-day outcomes (`purchase_14d`, `ncm_14d`, promo cost, returns). Builds the canonical `historical_feature_outcome` table |
+| 04 | `04_business_analysis` | KPIs and EDA, and randomized (exploration) offer effects |
+| 05 | `05_logistic_propensity_model` | Required Logistic Regression purchase-propensity baseline |
+| 06 | `06_tlearner_xgboost` | T-Learner: four XGBoost NCM models (one per action), trained on exploration rows |
+| 07 | `07_score_july_population` | Rebuild the 43 features at `policy_as_of_ts`. Score propensity and NCM under every action |
+| 08 | `08_estimate_promotion_cost` | Expected promo cost for each July customer × action, via XGBoost on exploration rows |
+| 09 | `09_milp_policy_optimization` | MILP (PuLP + CBC): one action per customer, under the official constraints |
+| 10 | `10_generate_outputs` | `policy_submission.csv`, the three required baselines, comparison and reporting tables and figures |
 
-Each step reads the **saved output of the step before it** instead of rebuilding that logic:
+Each step reads the **saved output of the step before it**:
 
 ```text
-data/raw/*.csv -> 01 -> data/processed/clean/*.parquet -> 02 -> historical_features -> 03 -> historical_feature_outcome -> 04 (KPIs) / 05 (model)
+data/raw → 01 → data/processed/clean → 02 → historical_features → 03 → historical_feature_outcome ─┬→ 04 KPIs
+                                                                                                    ├→ 05 logistic model ─┐
+                                                                                                    └→ 06 T-Learner models ┤
+policy_scoring_population + clean tables + src/features.py ───────────────────────→ 07 July features + scores ←┘
+→ 08 july_customer_action_values → 09 optimized_policy_detailed → 10 policy_submission.csv + baselines + dashboard
 ```
 
-## Setup and execution
+## Run it
 
-1. Put the 11 raw CSVs (`campaigns`, `customers`, `historical_assignments`, `web_sessions`, `email_events`, `orders`, `order_items`, `products`, `returns`, `offer_catalog`, `policy_scoring_population`) in `data/raw/`. The pipeline never modifies them, and Step 01 checks their SHA-256 hashes.
-2. Install the packages: `pip install -r requirements.txt`.
-3. Run the notebooks in order: 01 → 02 → 03 → 04 → 05. For example:
-   `jupyter nbconvert --to notebook --execute --inplace notebooks/0[1-5]_*.ipynb`
+1. Put the 11 raw CSVs in `data/raw/`. They are git-ignored, never modified, and their SHA-256 hashes are checked by Step 01.
+2. Install the packages:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Run all notebooks in order. This stops at the first failure; `python run_pipeline.py 06 10` runs just Steps 06–10:
+   ```
+   python run_pipeline.py
+   ```
+   Alternatively, open `notebooks/01_…` through `10_…` in Jupyter and choose **Run All** on each, in order.
+4. Launch the dashboard (it only reads saved outputs):
+   ```
+   streamlit run dashboard/app.py
+   ```
 
-Shared helpers are in `src/`:
-- `common.py` holds paths, constants and loaders.
-- `features.py` holds the Step 02 feature logic. Step 07 will reuse it with `cut="policy_as_of_ts", inclusive=True`.
+**Final submission:** `policy_submission.csv` (repository root, copied to `outputs/final/`). It has exactly four columns, in this order: `customer_id, recommended_action, estimated_incremental_ncm, estimated_promo_cost`. There is one row for each of the 2,776 scoring customers.
 
-## Outputs by step
+## Folder structure
 
-| Step | Outputs |
-|---|---|
-| 01 | `outputs/tables/data_quality_summary.csv` (79 tests), `schema_summary.csv`, `missingness_summary.csv`, `data/processed/clean/*.parquet`, `order_items_clean.csv` |
-| 02 | `data/processed/historical_features.{csv,parquet}`, `outputs/tables/feature_schema.csv` |
-| 03 | `data/processed/historical_outcomes.{csv,parquet}`, `historical_feature_outcome.{csv,parquet}`, `outputs/tables/outcome_schema.csv` |
-| 04 | `outputs/tables/kpi_by_{offer,campaign,tenure_value,behavior_segment,membership}.csv`, `incremental_ncm_*.csv`, `outputs/figures/04_*.png` |
-| 05 | `outputs/models/logistic_propensity_model.joblib`, `logistic_model_features.json`, `outputs/tables/logistic_{metrics,validation_grid,test_predictions,test_decile_lift}.csv`, `outputs/figures/05_*.png` |
+```text
+data/raw/                 supplied CSVs (not in git)
+data/processed/clean/     Step 01 clean tables
+data/processed/           historical_features, historical_outcomes, historical_feature_outcome, july_features (csv + parquet)
+src/                      common.py (paths/loaders), features.py (feature builder, Steps 02 & 07), modeling.py (XGBoost pipeline, Steps 06 & 08)
+notebooks/                01–10
+outputs/models/           logistic, T-Learner (×4), promo-cost (×3) pipelines + metadata JSON
+outputs/tables/           DQ, KPI, model metrics, July scores, customer-action values, policy, constraint audit, baseline comparison
+outputs/figures/          decision-useful charts from Steps 04, 05, 06, 10
+outputs/final/            policy_submission.csv
+dashboard/app.py          Streamlit dashboard
+docs/                     pipeline walkthrough (PDF + Markdown source)
+```
 
-## Key definitions and assumptions
+## Key rules and assumptions
 
-### Table grain
-`historical_feature_outcome` has **one row per `assignment_id`**, meaning one customer × one historical campaign. That is 26,600 rows covering CP01–CP07.
+### Timing (no leakage)
+- **Historical features** use events with timestamp `< send_ts`. Look-back windows are `[send_ts − N days, send_ts)`.
+- **July features** are built by the same `src/features.build_features` with `cut="policy_as_of_ts", inclusive=True`, so they use events `<= policy_as_of_ts`.
+- **Leakage tests:** Steps 02 and 07 check the latest event used per feature family, and inject fake future events to confirm that no feature changes.
+- **Outcome window:** `send_ts <= order_ts < send_ts + 14 days`. Only same-customer, same-campaign, completed orders count.
 
-### Leakage rule
-- A historical feature can only use events with timestamp **`< send_ts`**. Windows are `[send_ts − N days, send_ts)`.
-- July features will use events with timestamp **`<= policy_as_of_ts`**.
-- Step 02 proves this in two ways:
-  - a per-family check that the maximum of (event_ts − send_ts) is below 0;
-  - a perturbation test: fake events are injected at or after `send_ts`, and the features must not change.
+### Data cleaning and outcomes (Steps 01–03)
+- **Cleaning:** 160 exact duplicate `order_items` rows are removed. Cancelled orders are never purchases. Anonymous web sessions are excluded from features.
+- **NCM:** `ncm_14d = net_revenue − cogs − shipping_cost − refund_amount_applicable`. Net revenue already nets out discounts and shipping revenue.
+- **Return timing** (`RETURN_RULE` in Step 03):
+  - Only refunds returned inside the same 14-day window count.
+  - Refunds after the window are kept separately in `ncm_14d_all_returns` for sensitivity checks.
+  - This matters: $83.8K of refunds arrive after the window, versus $15.4K inside it.
+- **Promo cost:**
+  - PCT offers: the discount on redeemed orders.
+  - FREE_SHIP: an inferred $5.99 waived fee on redeemed orders below $75.08, flagged `promo_cost_inferred`.
+  - NO_OFFER: 0.
 
-### Cleaning (Step 01)
-- 160 exact duplicate `order_items` rows are removed.
-- Cancelled orders (all of which have zero financials) are kept for audit but are never purchases.
-- 220 anonymous web sessions are kept in the raw data but excluded from customer features.
-- Organic preperiod orders are used only as purchase history.
+### Logistic baseline (Step 05)
+- Trained on CP01–CP05, `C` tuned on CP06, tested on CP07, then refit on CP01–CP07.
+- It predicts **who will buy**, not who an offer changes. It is used only for required baseline #2.
 
-### 14-day outcome
-An order counts as an outcome for an assignment only if all of these hold:
-- it has the same customer and the same campaign;
-- its status is `completed`;
-- `send_ts <= order_ts < send_ts + 14d`.
+### T-Learner (Step 06)
+- **Models:** one `XGBRegressor` pipeline per action learns `E[ncm_14d | X, action]`.
+- **Incremental NCM:** for each action, the predicted NCM under that action minus the predicted NCM under NO_OFFER.
+- **Training data:** only randomized `exploration` rows. The `business_rule` rows were targeted, so they are confounded.
+- **Tuning:** one shared configuration is chosen on CP06 using pooled factual RMSE, tested once on CP07, then refit on all CP01–CP07 exploration rows.
+- **Grid adjustment:** the small grid was extended toward stronger regularization, because CP06 favoured the smallest models.
+- **Validation:** the final models' average effects reproduce the randomized Step 04 estimates.
+- **Limitation:** individual counterfactuals are never observed, so only factual accuracy and a held-out policy value (normalized IPW on CP07) are reported.
 
-`purchase_14d` = 1 if there is at least one such order. `aov_14d` = net revenue / orders, and is missing for non-purchasers.
+### Expected promotion cost (Step 08)
+- **Models:** one XGBoost per commercial action on exploration rows learns `E[promo_cost_14d | X, action]`. NO_OFFER = 0.
+- **Clipping:** final costs are `max(prediction, 0)`.
 
-### NCM
-`ncm_14d = net_revenue − cogs − shipping_cost − refund_amount_applicable`
+### Optimization (Step 09)
+- **Objective:** maximize `Σ x[i,a] · estimated_incremental_ncm[i,a]`.
+- **Constraints:**
+  - exactly one action per customer;
+  - expected promo spend ≤ **$62,000**;
+  - offers ≤ **floor(60% · N)**;
+  - `PCT_20` ≤ **15% of offered** customers;
+  - **measurement holdout:** `ceil(5% · N)` customers chosen at random (`seed 42`) *before* optimizing and forced to NO_OFFER.
+- **Solver:** CBC through PuLP. The run must return `Optimal`.
+- **Windows-on-ARM note:** PuLP 2.9 bundles CBC, but on Windows-on-ARM with x64 Python it looks for a missing arm64 binary, so Step 09 points to the bundled x64 `cbc.exe`.
 
-Net revenue already equals gross − discount + shipping revenue, so the formula doesn't double count. Step 03 checks that it reconciles.
-
-### Return timing
-This rule is set by `RETURN_RULE` in Step 03.
-- By default, a refund counts toward an assignment only if the return happens **inside that assignment's 14-day window**.
-- Refunds after the window are recorded separately (`post_window_*`). `ncm_14d_all_returns` is provided for sensitivity checks.
-- Returns arrive 3–31 days after the order, so most refunds on campaign orders fall after the window: $83.8K post-window versus $15.4K in-window.
-
-### Promo cost
-- PCT offers: the observed discount on redeemed orders.
-- FREE_SHIP: the waived fee is inferred and flagged (`promo_cost_inferred`). The inference uses the observed shipping rule: a $5.99 fee applies only when merchandise is under about $75, and this rule holds on every order that didn't use FREE_SHIP.
-- NO_OFFER: 0.
-
-### Profile fields
-There's no history table with effective dates for profile fields, so they are treated as descriptors available at decision time. `products.return_rate_prior` isn't used because the documentation doesn't say when it was measured.
-
-### Logistic baseline
-- Train on CP01–CP05, choose `C` on CP06, and test once on CP07. The final model is then refit on CP01–CP07.
-- Preprocessing and the model are saved together as one sklearn `Pipeline`:
-  - numeric features: median imputation with missing indicators, then scaling;
-  - categorical features: a `"Missing"` category, then one-hot encoding.
-- Treatment, delivery, IDs and every outcome field are excluded from X.
+### Required baselines (Step 10)
+All baselines are scored with the same July predictions and costs. Each keeps the holdout on NO_OFFER and respects the caps.
+1. **ALL_NO_OFFER.**
+2. **PROPENSITY_PCT10:** customers ranked by Logistic propensity get PCT_10 until the budget or the 60% cap is reached.
+3. **HISTORICAL_MIX:** the `business_rule` commercial mix (PCT_10 59.8% / PCT_20 13.1% / FREE_SHIP 27.1%) is applied to a seeded random 60% of non-holdout customers. The historical offer rate of 74.8% exceeds the cap, so the number of offers is scaled down to the cap.
 
 ## Required packages
-pandas, numpy, scikit-learn, matplotlib, joblib, pyarrow, plus jupyter/nbconvert to execute the notebooks. They are listed in `requirements.txt`, and the pipeline was tested on Python 3.14 (Anaconda).
+- **Phase 1:** pandas, numpy, scikit-learn, matplotlib, joblib, pyarrow, jupyter / nbconvert / nbclient.
+- **Phase 2:** xgboost, pulp (pinned to 2.9.x because it bundles the CBC binary), streamlit.
+
+The pipeline was tested on Python 3.14 (Anaconda). See `requirements.txt`.

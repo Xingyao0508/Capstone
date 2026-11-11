@@ -1,0 +1,2 @@
+solver_status,objective_total_expected_incremental_ncm,total_expected_ncm_optimized,total_expected_ncm_all_no_offer,expected_promo_spend,offered_customers,offered_share,pct20_share_among_offered,holdout_customers,n_NO_OFFER,n_PCT_10,n_PCT_20,n_FREE_SHIP
+Optimal,6406.9,51241.42,44834.52,1213.65,1665,0.5998,0.0,139,1111,206,0,1459
